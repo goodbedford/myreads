@@ -59,9 +59,12 @@ body, .app {
   background-position: center;
   background-size: 28px;
   box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  cursor: pointer;
   font-size: 0;
 }
-
+.open-search a:hover {
+    background-color: purple;
+}
 /* search page */
 
 .search-books-bar {
@@ -153,6 +156,9 @@ body, .app {
   background-position: center;
   background-size: 20px;
   box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+.book-shelf-changer:hover {
+    background-color: purple;
 }
 .book-shelf-changer select {
   width: 100%;
