@@ -1,103 +1,124 @@
-import React from 'react'
-import * as BooksAPI from './BooksAPI'
-import './App.css'
-import BookShelfList from './components/book-shelf-list.jsx';
-import { bookDisplayStatus } from './constants/constants.js';
+import React from 'react';
+import { Route } from 'react-router-dom';
+
+import * as BooksAPI from './BooksAPI';
+import './App.css';
+
+import BookShelfList from './components/book-shelf-list';
+import SearchBooks from './components/search-books';
+import SearchButton from './components/search-button';
+
+import { bookDisplayStatus, sizes } from './constants/constants';
+import searchTerms from './data/search-terms.json';
 
 class BooksApp extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             books: [],
-          /**
-           * TODO: Instead of using this state variable to keep track of which page
-           * we're on, use the URL in the browser's address bar. This will ensure that
-           * users can use the browser's back and forward buttons to navigate between
-           * pages, as well as provide a good URL they can bookmark and share.
-           */
-          showSearchPage: false
-        }
+            isLoading: { bookShelf: true, allBooks: true },
+            searchBooksResults: [],
+            searchInputText: '',
+            showSearchPage: false
+        };
         this.onChangeBookShelfStatus = this.onChangeBookShelfStatus.bind(this);
+        this.onChangeSearchInputText = this.onChangeSearchInputText.bind(this);
+        this.onSubmitSearchBooksBar = this.onSubmitSearchBooksBar.bind(this);
     }
 
+    changeShelfStatus (status, book) {
+        // need id
+      //   const updateBook = this.state.books.find((book) => book.id === id);
+        if (status === bookDisplayStatus.NONE.status) return;
 
-  componentDidMount () {
-      BooksAPI.getAll()
-        .then((books) => {
-            console.log('BOOKS', books);
-            this.setState({ books });
+        BooksAPI.update(book, status)
+          .then((updatedBookIds) => {
+              BooksAPI.getAll()
+                .then((books) => {
+                    console.log('BOOKS', books);
+                    this.setState({ books });
+                });
+          });
+    }
+    componentDidMount () {
+        BooksAPI.getAll()
+            .then((books) => {
+                console.log('BOOKS', books);
+                const { isLoading } = this.state;
+                isLoading['bookShelf'] = false;
+                isLoading['allBooks'] = false;
+                this.setState({
+                    books,
+                    isLoading
+                });
+            });
+    }
+
+    onChangeBookShelfStatus (event, book) {
+        const { value:status } = event.target;
+        //   this.isLoading[status] = true;
+        this.changeShelfStatus(status, book);
+    }
+
+    onChangeSearchInputText (event) {
+        debugger
+        const { value } = event.target;
+        this.setState({
+            searchInputText: value
         });
-  }
-  onChangeBookShelfStatus (event, book) {
+    }
 
-      const { value:status } = event.target;
-    //   this.isLoading[status] = true;
-      this.changeShelfStatus(status, book);
-  }
-  changeShelfStatus (status, book) {
-      // need id
-    //   const updateBook = this.state.books.find((book) => book.id === id);
-    if (status === bookDisplayStatus.NONE.status) return;
+    onSubmitSearchBooksBar (event) {
+        event.preventDefault();
+        console.log('SUBMIT')
+        const { searchTerm } = this.state.searchTerm;
+        const { MAX_RESULTS } = sizes;
 
-      BooksAPI.update(book, status)
-        .then((book) => {
-            console.log('BOOK UPDATED', book);
-            // this.setState({
-            //     isLoading: {}
-            // });
-        })
-        .then(() => {
-            BooksAPI.getAll()
-              .then((books) => {
-                  console.log('BOOKS', books);
-                  this.setState({ books });
-              });
-        })
-  }
+        BooksAPI.searchQuery(searchTerm, MAX_RESULTS)
+            .then((bookResults) => {
+                this.setState({
+                    searchBooksResults: bookResults
+                });
+            });
+    }
 
-  render() {
-
-    return (
-      <div className="app">
-        {this.state.showSearchPage ? (
-          <div className="search-books">
-            <div className="search-books-bar">
-              <a className="close-search" onClick={() => this.setState({ showSearchPage: false })}>Close</a>
-              <div className="search-books-input-wrapper">
-                {/*
-                  NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                  You can find these search terms here:
-                  https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
-
-                  However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                  you don't find a specific author or title. Every search is limited by search terms.
-                */}
-                <input type="text" placeholder="Search by title or author"/>
-
-              </div>
+    render() {
+        console.log('LOADING--', this.state.isLoading)
+        return (
+            <div className="app">
+                <Route
+                    exact
+                    path='/search-books'
+                    render={() => (
+                        <SearchBooks
+                            books={this.state.searchBooksResults}
+                            isLoading={this.state.isLoading}
+                            onChangeBookShelfStatus={this.onChangeBookShelfStatus}
+                            onChangeSearchInputText={this.onChangeSearchInputText}
+                            onSubmitSearchBooksBar={this.onSubmitSearchBooksBar}
+                            searchInputText={this.state.searchInputText}
+                            searchTerms={searchTerms}
+                        />
+                )}/>
+                <Route
+                    exact
+                    path='/'
+                    render={() => (
+                        <div className="list-books">
+                            <div className="list-books-title">
+                                <h1>MyReads</h1>
+                            </div>
+                            <BookShelfList
+                                books={this.state.books}
+                                isLoading={this.state.isLoading}
+                                onChangeBookShelfStatus={this.onChangeBookShelfStatus}
+                            />
+                            <SearchButton />
+                        </div>
+                )}/>
             </div>
-            <div className="search-books-results">
-              <ol className="books-grid"></ol>
-            </div>
-          </div>
-        ) : (
-          <div className="list-books">
-            <div className="list-books-title">
-              <h1>MyReads</h1>
-            </div>
-            <BookShelfList
-                books={this.state.books}
-                isLoading={false}
-                onChangeBookShelfStatus={this.onChangeBookShelfStatus}
-            />
-            <div className="open-search">
-              <a onClick={() => this.setState({ showSearchPage: true })}>Add a book</a>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
+        );
+    }
 }
 
-export default BooksApp
+export default BooksApp;

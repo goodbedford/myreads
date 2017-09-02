@@ -1,10 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
-import { bookDisplayStatus } from '../constants/constants.js';
-import * as utils from '../utils/book-shelf-util.js';
-
-import Book from './book.jsx';
+import Book from './book';
 
 const getBookShelfItems = (books, onChangeCB) => {
     return books.map((book) => {
@@ -20,12 +17,12 @@ const getBookShelfItems = (books, onChangeCB) => {
 };
 const propTypes = {
     books: PropTypes.array.isRequired,
-    isLoadingShelf: PropTypes.bool.isRequired,
+    isLoadingBookShelf: PropTypes.bool.isRequired,
     onChangeBookShelfStatus: PropTypes.func.isRequired,
     bookShelfTitle: PropTypes.string.isRequired
 }
-const BookShelf = ({ books, isLoadingShelf, onChangeBookShelfStatus, bookShelfTitle }) => {
-    if (isLoadingShelf) {
+const BookShelf = ({ books, isLoadingBookShelf, onChangeBookShelfStatus, bookShelfTitle }) => {
+    if (isLoadingBookShelf) {
         return <div>Loading…</div>;
     }
 

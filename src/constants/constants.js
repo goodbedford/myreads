@@ -15,5 +15,13 @@ export const bookDisplayStatus = {
     WANT_TO_READ:  {
         label: 'Want to Read',
         status: 'wantToRead'
+    },
+    SEARCH_RESULTS:  {
+        label: 'Search Results',
+        status: 'searchResults'
     }
 };
+
+export const sizes = {
+    MAX_SEARCH_RESULTS: 10
+}

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { bookDisplayStatus } from '../constants/constants.js';
+import { bookDisplayStatus } from '../constants/constants';
 
 const defaultProps = {
     book: {
