@@ -16,10 +16,10 @@ class BooksApp extends React.Component {
         super(props);
         this.state = {
             books: [],
-            isLoading: { bookShelf: true, allBooks: true },
+            isLoading: { [bookDisplayStatus.ALL_BOOKS.status]: true },
             searchBooksResults: [],
             searchInputText: '',
-            showSearchPage: false
+            lastTermSearched: ''
         };
         this.onChangeBookShelfStatus = this.onChangeBookShelfStatus.bind(this);
         this.onChangeSearchInputText = this.onChangeSearchInputText.bind(this);
@@ -27,26 +27,35 @@ class BooksApp extends React.Component {
     }
 
     changeShelfStatus (status, book) {
-        // need id
-      //   const updateBook = this.state.books.find((book) => book.id === id);
-        if (status === bookDisplayStatus.NONE.status) return;
+        const searchBooks = this.state.searchBooksResults.filter((searchBook) => searchBook.id !== book.id);
+
+        this.setState((prevState) => {
+            prevState.isLoading[book.id] = true;
+            return prevState;
+        });
 
         BooksAPI.update(book, status)
           .then((updatedBookIds) => {
               BooksAPI.getAll()
                 .then((books) => {
-                    console.log('BOOKS', books);
-                    this.setState({ books });
+                    this.setState((prevState) => {
+                        prevState.isLoading[book.id] = false;
+                        return {
+                            books,
+                            isLoading: prevState.isLoading,
+                            searchBooksResults: searchBooks
+                        };
+                    });
                 });
           });
     }
+
     componentDidMount () {
         BooksAPI.getAll()
             .then((books) => {
-                console.log('BOOKS', books);
                 const { isLoading } = this.state;
-                isLoading['bookShelf'] = false;
-                isLoading['allBooks'] = false;
+                const { status } = bookDisplayStatus.ALL_BOOKS;
+                isLoading[status] = false;
                 this.setState({
                     books,
                     isLoading
@@ -56,49 +65,56 @@ class BooksApp extends React.Component {
 
     onChangeBookShelfStatus (event, book) {
         const { value:status } = event.target;
-        //   this.isLoading[status] = true;
         this.changeShelfStatus(status, book);
     }
 
     onChangeSearchInputText (event) {
-        debugger
         const { value } = event.target;
         this.setState({
-            searchInputText: value
+            searchInputText: value,
         });
     }
 
-    onSubmitSearchBooksBar (event) {
-        event.preventDefault();
-        console.log('SUBMIT')
-        const { searchTerm } = this.state.searchTerm;
+    onSubmitSearchBooksBar () {
+        const { searchInputText } = this.state;
         const { MAX_RESULTS } = sizes;
 
-        BooksAPI.searchQuery(searchTerm, MAX_RESULTS)
+        BooksAPI.search(searchInputText, MAX_RESULTS)
             .then((bookResults) => {
+                const lastTermSearched = searchInputText;
                 this.setState({
-                    searchBooksResults: bookResults
+                    lastTermSearched,
+                    searchBooksResults: bookResults,
+                    searchInputText: ''
                 });
             });
     }
 
     render() {
-        console.log('LOADING--', this.state.isLoading)
+        const { status } = bookDisplayStatus.ALL_BOOKS;
+
+        if (this.state.isLoading[status]) {
+            return (<div className='loadingAllBooks'>Loading…</div>);
+        }
+
         return (
             <div className="app">
                 <Route
                     exact
                     path='/search-books'
                     render={() => (
+                        <div>
                         <SearchBooks
                             books={this.state.searchBooksResults}
                             isLoading={this.state.isLoading}
+                            lastTermSearched={this.state.lastTermSearched}
                             onChangeBookShelfStatus={this.onChangeBookShelfStatus}
                             onChangeSearchInputText={this.onChangeSearchInputText}
                             onSubmitSearchBooksBar={this.onSubmitSearchBooksBar}
                             searchInputText={this.state.searchInputText}
                             searchTerms={searchTerms}
                         />
+                     </div>
                 )}/>
                 <Route
                     exact

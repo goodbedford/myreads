@@ -5,15 +5,16 @@ import SearchBooksBar from './search-books-bar';
 import SearchBooksResults from './search-books-results';
 
 import { bookDisplayStatus } from '../constants/constants';
+import * as utils from '../utils/book-shelf-util';
 
 const defaultProps = {
-    bookShelfTitle: bookDisplayStatus.SEARCH_RESULTS.label
-}
+    lastTermSearched: ''
+};
 
 const propTypes = {
     books: PropTypes.array.isRequired,
-    bookShelfTitle: PropTypes.string,
     isLoading: PropTypes.object.isRequired,
+    lastTermSearched: PropTypes.string,
     onChangeBookShelfStatus: PropTypes.func.isRequired,
     onChangeSearchInputText: PropTypes.func.isRequired,
     onSubmitSearchBooksBar: PropTypes.func.isRequired,
@@ -21,20 +22,19 @@ const propTypes = {
     searchTerms: PropTypes.array.isRequired
 };
 
-const SearchBooks = ({
-    books,
-    bookShelfTitle,
-    isLoading,
-    onChangeBookShelfStatus,
-    onChangeSearchInputText,
-    onSubmitSearchBooksBar,
-    searchInputText,
-    searchTerms
-}) => {
+const SearchBooks = (
+    {
+        books,
+        isLoading,
+        lastTermSearched,
+        onChangeBookShelfStatus,
+        onChangeSearchInputText,
+        onSubmitSearchBooksBar,
+        searchInputText,
+        searchTerms
+    }) => {
 
-    if (isLoading['allBooks']) {
-        return <div>Loading…</div>;
-    }
+    const searchBooksResults = utils.getBookByShelfStatus(books, bookDisplayStatus.SEARCH_RESULTS.status);
 
     return (
         <div>
@@ -42,19 +42,22 @@ const SearchBooks = ({
                 isLoading={isLoading}
                 onChangeSearchInputText={onChangeSearchInputText}
                 onSubmitSearchBooksBar={onSubmitSearchBooksBar}
+                lastTermSearched={lastTermSearched}
                 searchInputText={searchInputText}
                 searchTerms={searchTerms}
             />
             <SearchBooksResults
-                books={books}
-                bookShelfTitle={bookShelfTitle}
-                isLoadingBookShelf={false}
+                books={searchBooksResults}
+                bookShelfTitle={bookDisplayStatus.SEARCH_RESULTS.label}
+                isLoading={isLoading}
+                lastTermSearched={lastTermSearched}
                 onChangeBookShelfStatus={onChangeBookShelfStatus}
             />
         </div>
-    )
+    );
 };
-SearchBooks.propTypes = propTypes;
+
 SearchBooks.defaultProps = defaultProps;
+SearchBooks.propTypes = propTypes;
 
 export default SearchBooks;

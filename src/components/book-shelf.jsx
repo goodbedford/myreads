@@ -3,40 +3,47 @@ import PropTypes from 'prop-types';
 
 import Book from './book';
 
-const getBookShelfItems = (books, onChangeCB) => {
+const getBookShelfItems = (books, isLoading, onChangeCB) => {
     return books.map((book) => {
         return (
             <li key={book.id}>
                 <Book
                     book={book}
+                    isLoading={isLoading}
                     onChangeBookShelfStatus={onChangeCB}
-                    />
+                />
             </li>
         );
     });
 };
+
+const defaultProps = {
+    lastTermSearched: ''
+};
+
 const propTypes = {
     books: PropTypes.array.isRequired,
-    isLoadingBookShelf: PropTypes.bool.isRequired,
-    onChangeBookShelfStatus: PropTypes.func.isRequired,
-    bookShelfTitle: PropTypes.string.isRequired
-}
-const BookShelf = ({ books, isLoadingBookShelf, onChangeBookShelfStatus, bookShelfTitle }) => {
-    if (isLoadingBookShelf) {
-        return <div>Loading…</div>;
-    }
+    bookShelfTitle: PropTypes.string.isRequired,
+    isLoading: PropTypes.object.isRequired,
+    lastTermSearched: PropTypes.string,
+    onChangeBookShelfStatus: PropTypes.func.isRequired
+};
+
+const BookShelf = ({ books, isLoading, lastTermSearched, onChangeBookShelfStatus, bookShelfTitle }) => {
 
     return (
         <div className="bookshelf">
-          <h2 className="bookshelf-title">{bookShelfTitle}</h2>
-          <div className="bookshelf-books">
-            <ol className="books-grid">
-                {getBookShelfItems(books, onChangeBookShelfStatus)}
-            </ol>
-          </div>
+            <h2 className="bookshelf-title">{bookShelfTitle} <span className='label-number'>{books.length} </span><span>{lastTermSearched}</span> Books</h2>
+            <div className="bookshelf-books">
+                <ol className="books-grid">
+                    {getBookShelfItems(books, isLoading, onChangeBookShelfStatus)}
+                </ol>
+            </div>
         </div>
-    )
-}
+    );
+};
+
+BookShelf.defaultProps = defaultProps;
 BookShelf.propTypes = propTypes;
 
 export default BookShelf;
