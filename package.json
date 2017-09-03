@@ -19,5 +19,5 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
-  "homepage": "http://goodbedford.github.io/myreads"
+  "homepage": "http://goodbedford.github.io/myreads/"
 }
