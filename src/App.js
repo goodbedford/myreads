@@ -23,6 +23,7 @@ class BooksApp extends React.Component {
         };
         this.onChangeBookShelfStatus = this.onChangeBookShelfStatus.bind(this);
         this.onChangeSearchInputText = this.onChangeSearchInputText.bind(this);
+        this.onClickClearSearchResults = this.onClickClearSearchResults.bind(this);
         this.onSubmitSearchBooksBar = this.onSubmitSearchBooksBar.bind(this);
     }
 
@@ -36,17 +37,15 @@ class BooksApp extends React.Component {
 
         BooksAPI.update(book, status)
           .then((updatedBookIds) => {
-              BooksAPI.getAll()
-                .then((books) => {
-                    this.setState((prevState) => {
-                        prevState.isLoading[book.id] = false;
-                        return {
-                            books,
-                            isLoading: prevState.isLoading,
-                            searchBooksResults: searchBooks
-                        };
-                    });
-                });
+              return this.setState((prevState) => {
+                prevState.isLoading[book.id] = false;
+                book.shelf = status;
+                return {
+                    books: prevState.books.filter((currentBook) => currentBook.id !== book.id).concat([book]),
+                    isLoading: prevState.isLoading,
+                    searchBooksResults: searchBooks
+                }
+            });
           });
     }
 
@@ -75,6 +74,13 @@ class BooksApp extends React.Component {
         });
     }
 
+    onClickClearSearchResults (event) {
+        this.setState({
+            lastTermSearched: '',
+            searchBooksResults: []
+        });
+    }
+
     onSubmitSearchBooksBar () {
         const { searchInputText } = this.state;
         const { MAX_RESULTS } = sizes;
@@ -82,9 +88,20 @@ class BooksApp extends React.Component {
         BooksAPI.search(searchInputText, MAX_RESULTS)
             .then((bookResults) => {
                 const lastTermSearched = searchInputText;
+                const filteredBookResults = bookResults.map((bookResult) => {
+                    const filteredBook = this.state.books.find((currentBook) => {
+                        if (bookResult.id === currentBook.id) {
+                            bookResult.shelf = currentBook.shelf;
+                            return true;
+                        }
+                        return false;
+                    });
+                    return filteredBook || bookResult;
+                });
+
                 this.setState({
                     lastTermSearched,
-                    searchBooksResults: bookResults,
+                    searchBooksResults: filteredBookResults,
                     searchInputText: ''
                 });
             });
@@ -129,7 +146,7 @@ class BooksApp extends React.Component {
                                 isLoading={this.state.isLoading}
                                 onChangeBookShelfStatus={this.onChangeBookShelfStatus}
                             />
-                            <SearchButton />
+                        <SearchButton onClickClearSearchResults={this.onClickClearSearchResults} />
                         </div>
                 )}/>
             </div>
