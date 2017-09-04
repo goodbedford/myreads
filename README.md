@@ -6,6 +6,7 @@ Of course, you are free to start this project from scratch if you wish! Just be 
   - https://github.com/goodbedford/myreads
 - Unzip files
 - Run application
+  - yarn install
   - yarn run start
   - browser should open on http://localhost:3000/
 
