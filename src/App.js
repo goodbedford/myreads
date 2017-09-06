@@ -72,23 +72,36 @@ class BooksApp extends React.Component {
         this.setState({
             searchInputText: value,
         });
+        this.onSubmitSearchBooksBar(event, value);
     }
 
     onClickClearSearchResults (event) {
         this.setState({
             lastTermSearched: '',
-            searchBooksResults: []
+            searchBooksResults: [],
+            searchInputText: ''
         });
     }
 
-    onSubmitSearchBooksBar () {
-        const { searchInputText } = this.state;
+    onSubmitSearchBooksBar (event = null, newSearchInputText) {
+        event && event.preventDefault();
+        let { searchInputText } = this.state;
         const { MAX_RESULTS } = sizes;
+        if (newSearchInputText) {
+            searchInputText = newSearchInputText;
+        }
 
         BooksAPI.search(searchInputText, MAX_RESULTS)
             .then((bookResults) => {
-                const lastTermSearched = searchInputText;
-                const filteredBookResults = bookResults.map((bookResult) => {
+                let lastTermSearched = searchInputText;
+                let filteredBookResults;
+                let booksToFilter = bookResults;
+
+                if (bookResults && bookResults.error) {
+                    booksToFilter = bookResults.items;
+                }
+
+                filteredBookResults = booksToFilter.map((bookResult) => {
                     const filteredBook = this.state.books.find((currentBook) => {
                         if (bookResult.id === currentBook.id) {
                             bookResult.shelf = currentBook.shelf;
@@ -101,10 +114,12 @@ class BooksApp extends React.Component {
 
                 this.setState({
                     lastTermSearched,
-                    searchBooksResults: filteredBookResults,
-                    searchInputText: ''
+                    searchBooksResults: filteredBookResults
                 });
-            });
+            })
+            .catch((error) => {
+                console.log('ERROR', error);
+            })
     }
 
     render() {

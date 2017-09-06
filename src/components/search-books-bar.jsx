@@ -27,8 +27,7 @@ class SearchBooksBar extends Component {
     }
 
     onSubmit(event) {
-        event.preventDefault();
-        this.props.onSubmitSearchBooksBar();
+        this.props.onSubmitSearchBooksBar(event);
     }
 
     render () {
