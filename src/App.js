@@ -89,6 +89,9 @@ class BooksApp extends React.Component {
         const { MAX_RESULTS } = sizes;
         if (newSearchInputText) {
             searchInputText = newSearchInputText;
+        } else if (newSearchInputText === '') {
+            this.onClickClearSearchResults();
+            return;
         }
 
         BooksAPI.search(searchInputText, MAX_RESULTS)
